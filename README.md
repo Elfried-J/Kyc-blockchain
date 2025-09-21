@@ -1,5 +1,5 @@
-ChatGPT said:
-KYC Blockchain Demo — Deep Dive (Humanized)
+
+KYC Blockchain Demo 
 
 This project shows, in plain terms, how KYC can ride on a lightweight blockchain to guarantee integrity and provenance—without ever putting someone’s passport photo or address on-chain. It’s small enough to read in an afternoon, but it tackles real concerns: cryptographic signatures, stable canonical data, proof-of-work, audit trails, and a practical AI attestation that’s verifiable off-chain.
 
