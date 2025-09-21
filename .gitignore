@@ -1,0 +1,20 @@
+# Maven
+target/
+dependency-reduced-pom.xml
+*.log
+
+# IntelliJ IDEA
+.idea/
+*.iml
+out/
+
+# VS Code (if used)
+.vscode/
+
+# OS cruft
+.DS_Store
+Thumbs.db
+
+# Misc
+*.swp
+*.swo
