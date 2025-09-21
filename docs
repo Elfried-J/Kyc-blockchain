@@ -1,2 +1,121 @@
-I will post some my test result here.
+I will post some my test result here:
+C:\Users\Admin\.jdks\openjdk-24.0.2\bin\java.exe -agentlib:jdwp=transport=dt_socket,address=127.0.0.1:61573,suspend=y,server=n -javaagent:C:\Users\Admin\AppData\Local\JetBrains\IdeaIC2025.2\captureAgent\debugger-agent.jar=file:///C:/Users/Admin/AppData/Local/Temp/capture15525926004531538815.props -agentpath:C:\Users\Admin\AppData\Local\Temp\idea_libasyncProfiler_dll_temp_folder\libasyncProfiler.dll=version,jfr,event=wall,interval=10ms,cstack=no,file=C:\Users\Admin\IdeaSnapshots\Main_2025_09_21_190330.jfr,dbghelppath=C:\Users\Admin\AppData\Local\Temp\idea_dbghelp_dll_temp_folder\dbghelp.dll,log=C:\Users\Admin\AppData\Local\Temp\Main_2025_09_21_190330.jfr.log.txt,logLevel=DEBUG -Dkotlinx.coroutines.debug.enable.creation.stack.trace=false -Ddebugger.agent.enable.coroutines=true -Dkotlinx.coroutines.debug.enable.flows.stack.trace=true -Dkotlinx.coroutines.debug.enable.mutable.state.flows.stack.trace=true -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 -classpath "C:\Users\Admin\Javaprojects\kyc-blockchain\target\classes;C:\Program Files\JetBrains\IntelliJ IDEA Community Edition 2025.2\lib\idea_rt.jar" com.example.kycchain.Main
+Connected to the target VM, address: '127.0.0.1:61573', transport: 'socket'
+===== KYC Chain Comprehensive Test Suite =====
+
+--- Scenario 1: Happy path, multi-customers, multi-tx blocks ---
+  PASS: Chain validates after multi-tx batching
+  PASS: Audit for Cust2 returns 4 transactions
+
+--- Scenario 2: Impersonation fails (signer != bankId) ---
+  PASS: Validation fails because signer name does not match declared bankId
+
+--- Scenario 3: In-chain payload tamper is detected ---
+  PASS: Chain valid prior to tamper
+  PASS: Validation fails after payload tamper inside a mined block
+
+--- Scenario 4: Signature swap attack is detected ---
+  PASS: Chain valid before signature swap
+  PASS: Validation fails after signature swap (signatures are bound to canonical data)
+
+--- Scenario 5: Replay detection by audit ---
+  PASS: Chain remains valid cryptographically with a replayed tx
+  PASS: Audit detects duplicate txId (replay) even though PoW and signatures are intact
+
+--- Scenario 6: Difficulty and link assertions ---
+  PASS: Baseline validity
+  PASS: All non-genesis blocks satisfy link and hash-prefix constraints
+
+--- Scenario 7: Randomized fuzzing with adversarial edits ---
+  PASS: Trial 0: valid before adversarial edit
+  PASS: Trial 0: post-edit validity matches expectation (attack=2)
+  PASS: Trial 1: valid before adversarial edit
+  PASS: Trial 1: post-edit validity matches expectation (attack=3)
+  PASS: Trial 2: valid before adversarial edit
+  PASS: Trial 2: post-edit validity matches expectation (attack=1)
+  PASS: Trial 3: valid before adversarial edit
+  PASS: Trial 3: post-edit validity matches expectation (attack=0)
+  PASS: Trial 4: valid before adversarial edit
+  PASS: Trial 4: post-edit validity matches expectation (attack=3)
+  PASS: Trial 5: valid before adversarial edit
+  PASS: Trial 5: post-edit validity matches expectation (attack=2)
+  PASS: Trial 6: valid before adversarial edit
+  PASS: Trial 6: post-edit validity matches expectation (attack=2)
+  PASS: Trial 7: valid before adversarial edit
+  PASS: Trial 7: post-edit validity matches expectation (attack=3)
+  PASS: Trial 8: valid before adversarial edit
+  PASS: Trial 8: post-edit validity matches expectation (attack=2)
+  PASS: Trial 9: valid before adversarial edit
+  PASS: Trial 9: post-edit validity matches expectation (attack=1)
+  PASS: Trial 10: valid before adversarial edit
+  PASS: Trial 10: post-edit validity matches expectation (attack=0)
+  PASS: Trial 11: valid before adversarial edit
+  PASS: Trial 11: post-edit validity matches expectation (attack=0)
+  PASS: Trial 12: valid before adversarial edit
+  PASS: Trial 12: post-edit validity matches expectation (attack=0)
+  PASS: Trial 13: valid before adversarial edit
+  PASS: Trial 13: post-edit validity matches expectation (attack=0)
+  PASS: Trial 14: valid before adversarial edit
+  PASS: Trial 14: post-edit validity matches expectation (attack=1)
+  PASS: Trial 15: valid before adversarial edit
+  PASS: Trial 15: post-edit validity matches expectation (attack=2)
+  PASS: Trial 16: valid before adversarial edit
+  PASS: Trial 16: post-edit validity matches expectation (attack=1)
+  PASS: Trial 17: valid before adversarial edit
+  PASS: Trial 17: post-edit validity matches expectation (attack=0)
+  PASS: Trial 18: valid before adversarial edit
+  PASS: Trial 18: post-edit validity matches expectation (attack=0)
+  PASS: Trial 19: valid before adversarial edit
+  PASS: Trial 19: post-edit validity matches expectation (attack=0)
+  PASS: Trial 20: valid before adversarial edit
+  PASS: Trial 20: post-edit validity matches expectation (attack=2)
+  PASS: Trial 21: valid before adversarial edit
+  PASS: Trial 21: post-edit validity matches expectation (attack=0)
+  PASS: Trial 22: valid before adversarial edit
+  PASS: Trial 22: post-edit validity matches expectation (attack=1)
+  PASS: Trial 23: valid before adversarial edit
+  PASS: Trial 23: post-edit validity matches expectation (attack=3)
+  PASS: Trial 24: valid before adversarial edit
+  PASS: Trial 24: post-edit validity matches expectation (attack=3)
+  PASS: Trial 25: valid before adversarial edit
+  PASS: Trial 25: post-edit validity matches expectation (attack=3)
+  PASS: Trial 26: valid before adversarial edit
+  PASS: Trial 26: post-edit validity matches expectation (attack=1)
+  PASS: Trial 27: valid before adversarial edit
+  PASS: Trial 27: post-edit validity matches expectation (attack=2)
+  PASS: Trial 28: valid before adversarial edit
+  PASS: Trial 28: post-edit validity matches expectation (attack=0)
+  PASS: Trial 29: valid before adversarial edit
+  PASS: Trial 29: post-edit validity matches expectation (attack=2)
+
+--- Scenario 8: Rebuild chain from existing txs ---
+  PASS: Original chain valid
+  PASS: Rebuilt chain also validates with same tx objects
+
+--- Scenario 9: Re-mining cannot fix broken signatures ---
+  PASS: Baseline valid prior to tamper
+  PASS: Even after re-mining, invalid signature keeps chain invalid
+
+--- Scenario 10: Latency micro-benchmarks ---
+  PASS: Benchmark chain valid at difficulty 2
+  Difficulty 2: avg=0ms p50=0ms p90=2ms p99=3ms (N=30)
+  PASS: Benchmark chain valid at difficulty 3
+  Difficulty 3: avg=14ms p50=13ms p90=28ms p99=35ms (N=20)
+
+--- Scenario 11: AI attestation end-to-end ---
+  PASS: Chain valid with AI-assisted verification
+  PASS: Verify tx carries model id/version
+  PASS: Verify tx binds to attestation hash
+  PASS: Off-chain attestation retrievable by hash
+  PASS: Registry accepts attestation signature and model binding
+  PASS: Different attestation content produces a different hash
+  PASS: Changing a signed field in the verify tx invalidates the chain
+
+===== SUMMARY =====
+Passed: 84   Failed: 0
+All scenarios passed.
+Disconnected from the target VM, address: '127.0.0.1:61573', transport: 'socket'
+
+Process finished with exit code 0
+
   
