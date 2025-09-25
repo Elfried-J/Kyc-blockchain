@@ -1,106 +1,112 @@
+YC Blockchain Demo
 
-KYC Blockchain Demo 
+A blockchain prototype for Know Your Customer (KYC) processes, designed to show how institutions can share and verify identity data securely without ever exposing personal documents on-chain. This project demonstrates cryptographic integrity, proof-of-work mining, domain rules for participants, and even an optional AI attestation layer for realistic pre-screening of KYC files.
 
-This project shows, in plain terms, how KYC can ride on a lightweight blockchain to guarantee integrity and provenance—without ever putting someone’s passport photo or address on-chain. It’s small enough to read in an afternoon, but it tackles real concerns: cryptographic signatures, stable canonical data, proof-of-work, audit trails, and a practical AI attestation that’s verifiable off-chain.
+Description
 
-The Story in One Pass
+This project explores how blockchain can be applied to KYC in a lightweight, transparent, and privacy-preserving way. In many banking and financial contexts, customers are asked to repeatedly provide their KYC documents—passport, proof of address, or biometric data—to different institutions. This leads to duplication, long verification cycles, and potential privacy risks.
 
-A customer submits KYC documents. Instead of storing the raw files on a blockchain, we hash them (SHA-256) and record just that hash plus a pointer to where the real files live. A bank reviews the submission and publishes a signed verification. If the bank used an AI pre-screen, the verification also records the model’s id/version and the hash of the AI service’s signed attestation. Finally, the bank shares this verified “KYC stamp” with a relying institution. Every step is signed; every block is mined; any change breaks the chain.
+The KYC Blockchain Demo solves this problem by recording only hashes and pointers to off-chain data, instead of storing raw sensitive information on-chain. Every action—upload, verification, and sharing—is represented as a signed transaction, and each transaction is grouped into a mined block. The blocks are linked together using cryptographic hashes, ensuring immutability and tamper-evidence.
 
-How the Code Is Organized
+The workflow is simple yet powerful:
 
-Main.java is the living spec. It runs eleven scenarios: happy path, impersonation attempts, payload tampering, signature swaps, replay detection, fuzzing, rebuilds, re-mining, performance checks, and the AI path. Each prints a single PASS/FAIL line so the outcome is unambiguous.
+Customer Upload: The customer commits a hash of their KYC package along with a pointer to the raw data, signed with their private key.
 
-The core folder houses two pieces. Blockchain is the minimal consensus layer: chained blocks, adjustable proof-of-work, and straightforward validation. KYCService is the domain façade that creates transactions, collects signatures, orchestrates the flow, and—if the AI module is enabled—verifies the attestation and binds its hash into the bank’s verification.
+Bank Verification: A bank reviews the submission, may consult an AI pre-screening service, and signs a verification transaction. The AI’s decision is represented off-chain as a signed attestation, while the blockchain stores its hash and the model version.
 
-The model folder defines the vocabulary. Block is a mined container of transactions. Participant is a named actor with a role and an ECDSA keypair. Under tx/ you’ll find the base transaction class (canonicalization + signing) and the three concrete actions that make up the KYC protocol: upload, verify, and share.
+Sharing: The verified KYC stamp is shared securely with another institution, removing the need for repetitive document collection.
 
-The ai folder mirrors how many teams work in practice: an off-chain ML service pre-screens documents and returns a signed attestation. Attestation captures model id/version, input fingerprint, risk score, flags, timestamp, and a signature. ModelRegistry is a simple allow-list mapping model versions to public keys. SimpleKycAIService generates deterministic, signed attestations so you can focus on the signature and binding flow, not model training.
+Every step is auditable, and any tampering—such as payload changes, impersonation attempts, or swapped signatures—invalidates the chain. Eleven test scenarios in the project demonstrate resilience against real-world attack vectors such as replay, tampering, and re-mining. The result is a compact but thorough model for blockchain-based KYC integrity.
 
-The Transaction Flow
+Getting Started
+Dependencies
 
-Upload starts with the customer. We compute a hash of the raw KYC payload, keep the raw data off-chain, and publish a KYC_UPLOAD containing the customer id, hash, pointer, and the customer’s signature over canonical data.
+Before running the program, ensure you have the following prerequisites installed on your machine:
 
-Verify happens at the bank. If the bank consults the AI service, the AI returns a signed attestation. We verify that signature against the registry, then publish a KYC_VERIFY that includes the decision and binds to the attestation via its hash. The bank signs the entire verification payload, so changing the model id/version or the attestation hash later will break the signature.
+Java 17 or later: The project uses modern Java language features and requires at least version 17.
 
-Share is the handoff. The bank publishes a KYC_SHARE that points to the verify transaction and names the recipient institution, signed by the bank.
+Maven 3.8 or later: Used for building and packaging the project.
 
-Canonical Strings and Signatures
+Operating System: Works on Windows, macOS, or Linux.
 
-Every transaction reduces to a stable, delimiter-based string that includes all fields that matter for trust. We sign that string together with the signer’s public key to prevent key-swap tricks. Validation recomputes the canonical data and verifies the signature using the embedded public key. Because domain-specific fields (like model id/version and attestation hash) are included, even a one-character tweak is detectable.
+No external libraries: All cryptographic primitives (SHA-256, ECDSA) and core logic are implemented using standard Java libraries.
 
-Blocks, Mining, and Validation
+Optional: A terminal or IDE such as IntelliJ IDEA for running and exploring the project.
 
-Each block carries an index, timestamp, previous hash, nonce, and transactions. Mining increments the nonce until the block hash has the required number of leading zeros. Validation re-hashes the block, checks the difficulty prefix, and verifies the previous-hash link. Re-mining cannot “fix” a forged transaction—signatures still fail—so integrity holds.
+How to run the program
 
-Validation runs on three layers:
+Clone the repository
+Open a terminal and clone the repository into your local environment:
 
-Link + PoW: previous hash matches, recomputed hash equals stored hash, difficulty prefix holds.
+git clone https://github.com/your-username/kyc-blockchain.git
+cd kyc-blockchain
 
-Signatures: every transaction verifies under its signer’s public key and canonical data.
 
-Domain rules: signer identity must match the declared entity (e.g., bankId on a verification must be the actual signer).
+Build the project with Maven
+Use Maven to clean and package the project:
 
-AI Attestation, Kept Private
+mvn clean package
 
-The AI service lives off-chain. It returns a signed attestation; the chain records only its hash plus model id/version. Later, an auditor can retrieve the attestation separately, re-hash it, check the signature against the registry’s public key, and confirm that the bank’s decision referenced this exact artifact—without exposing any private content on-chain.
 
-Auditing and Replays
+Run the JAR file
+After building, run the packaged application from the target directory:
 
-Audits are by customer id and list uploads, verifications, and shares in order. Replaying a transaction id is visible to auditors even if the chain remains cryptographically valid. You can keep replay detection as an audit concern (as shown) or promote it to a consensus rule in your own variant.
+java -jar target/kyc-blockchain-1.0-SNAPSHOT.jar
 
-Threats and Defenses
 
-Payload tampering is caught by signature checks. Impersonation (BankB signing while claiming to be BankA) is rejected by domain rules. Signature swaps across independent transactions fail because signatures bind to canonical payloads. Re-mining doesn’t help after tamper. Attestation mismatches are exposed by the on-chain hash and the registry’s allow-list.
+Observe the test scenarios
+The program will execute eleven scenarios end-to-end. These include:
 
-Cost and Performance Signals
+Happy path with multiple customers and multi-transaction blocks
 
-Difficulty is tunable so you can see latency trade-offs on your machine. Micro-benchmarks print average and tail mining times. Transactions are tiny canonical strings; signature checks are constant time. No external services are required, which keeps reasoning simple.
+Impersonation attempts (banks pretending to be others)
 
-What Lives On-Chain (and What Doesn’t)
+Payload tampering
 
-On-chain: transaction headers, hashes, signatures, signer public keys, and the minimal references you need—pointers to off-chain KYC data and the hash of an AI attestation. Off-chain: the raw KYC payload and the attestation JSON. This split keeps the chain lean and the privacy surface small.
+Signature swaps across transactions
 
-Tests With a Purpose
+Replay detection
 
-The scenarios aren’t theater; they prove properties:
+Randomized fuzzing with adversarial edits
 
-Scaling across customers and multi-tx blocks.
+Chain rebuilds and re-mining after tamper
 
-Impersonation blocked.
+Performance benchmarks with proof-of-work difficulty
 
-Payload tamper and signature swaps detected.
+AI-assisted verification with attestation binding
 
-Replays visible to audit.
+Each scenario prints clear PASS or FAIL results to the console and ends with a summary. A successful run looks like:
 
-Rebuilds validate, proving signatures don’t depend on block metadata.
+===== SUMMARY =====
+Passed: 84   Failed: 0
+All scenarios passed.
 
-Re-mining can’t mask bad signatures.
+Help
 
-Benchmarks quantify mining cost.
+If you encounter issues running the project, consider the following troubleshooting tips:
 
-AI decisions are tied to signed, verifiable artifacts.
+Java not recognized: Make sure Java 17+ is installed and added to your system PATH. Check by running java -version.
 
-Each prints a one-line assertion so reviewers can follow the logic without digging through code.
+Maven not recognized: Ensure Maven is installed and available in your PATH. Check with mvn -v.
 
-Where to Take It Next
+Build errors: Run mvn clean before rebuilding to clear old artifacts.
 
-Persist attestations and the model registry (file or DB) for cross-process auditing.
+Scenarios fail: If any scenario reports a failure, double-check that you have not modified transaction classes or cryptographic utilities, since even a one-character change can invalidate signatures.
 
-Add Merkle roots to block headers for explicit inclusion proofs.
+IDE setup: If using IntelliJ IDEA, import the project as a Maven project and mark src/main/java as a source root.
 
-Enforce roles in KYCService (only banks verify; only origin bank shares).
+For further exploration:
 
-Expose a small REST API to submit txs and run audits.
+Experiment with the difficulty parameter in Blockchain.java to see how mining latency changes.
 
-If your policy demands it, make replay prevention a consensus rule.
+Add your own participants or modify the AI module (ai/) to simulate different verification strategies.
 
-Why This Approach Works in Practice
+Extend the audit logic to persist results to disk or integrate with a database.
 
-It respects privacy by design, keeps the chain minimal, and still answers the forensic questions: who did what, when, using which evidence. It records that a particular AI model and version influenced a decision without dragging ML internals onto the chain. And because the mechanics are visible—canonicalization, signatures, proof-of-work—you can audit the system and explain it to non-engineers with confidence.
+Closing Notes
 
-How to Read It
+The KYC Blockchain Demo is not just an academic exercise. It captures the challenges real institutions face when handling repeated KYC checks and shows how blockchain principles can be applied responsibly—protecting privacy, ensuring provenance, and enabling trust across multiple organizations.
 
-Have ten minutes? Run it and skim the scenario output. Have thirty? Read Main.java, then Blockchain.java and KYCService.java. Ready for details? Open the transaction classes to see how canonical strings are formed and signed, then visit the AI module to understand attestation verification and binding.
+By running and reading through the code, you’ll see how cryptographic signatures, canonical transaction formats, and proof-of-work can be combined into a working system. The addition of the AI attestation demonstrates how modern ML services can integrate with blockchain in a verifiable but privacy-preserving way.
 
-In short: small on ceremony, strong on concepts, and built to show how integrity, provenance, and privacy can coexist in a KYC workflow.
+This project is a foundation for exploring blockchain-based compliance, integrity systems, and secure data exchange. It’s lean, auditable, and extensible—built to spark discussion, inspire contributions, and show how integrity and privacy can coexist.
